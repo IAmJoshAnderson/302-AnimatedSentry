@@ -27,7 +27,9 @@ public class PlayerTargeting : MonoBehaviour
             if (cooldownPickTarget <= 0) PickATarget(); //Calls for a new target to be picked
 
         }
-        else { target = null; }
+        else { 
+            target = null; 
+        }
 
         print(target);
 

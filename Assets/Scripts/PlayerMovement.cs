@@ -38,7 +38,7 @@ public class PlayerMovement : MonoBehaviour
             float camYaw = cam.transform.eulerAngles.y;
 
             //while (camYaw > playerYaw + 180) camYaw -= 360;
-               // while (camYaw < playerYaw - 180) camYaw += 360;
+           // while (camYaw < playerYaw - 180) camYaw += 360;
 
             Quaternion targetRotation = Quaternion.Euler(0, camYaw, 0);
 
