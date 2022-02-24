@@ -43,6 +43,8 @@ public static class AnimMath
     public static Quaternion Lerp(Quaternion a, Quaternion b, float p, bool allowExtrapolation = false)
     {
 
+        b = WrapQuaternion(a, b);
+
         Quaternion rot = Quaternion.identity;
 
         rot.x = Lerp(a.x, b.x, p, allowExtrapolation);
@@ -89,4 +91,22 @@ public static float Ease(float current, float target, float percentLeftAfter1Sec
 
         return angleToBeWrapped;
     }
+    public static Quaternion WrapQuaternion(Quaternion baseAngle, Quaternion angleToBeWrapped)
+    {
+        float alignment = Quaternion.Dot(baseAngle, angleToBeWrapped);
+
+        if (alignment < 0)
+        {
+            // todo: wrap that angle
+            angleToBeWrapped.x *= -1;
+            angleToBeWrapped.y *= -1;
+            angleToBeWrapped.z *= -1;
+            angleToBeWrapped.w *= -1;
+
+        }
+        return angleToBeWrapped;
+    }
+
+
+
 }

@@ -5,20 +5,21 @@ using UnityEngine;
 
 public class PointAt : MonoBehaviour
 {
+    public Transform target;
 
     public bool lockAxisX = false;
     public bool lockAxisY = false;
     public bool lockAxisZ = false;
 
+
     private Quaternion startRotation;
     private Quaternion goalRotation;
 
-    private PlayerTargeting playerTargeting;
 
     // Start is called before the first frame update
     void Start()
     {
-        playerTargeting = GetComponentInParent<PlayerTargeting>();
+        //playerTargeting = GetComponentInParent<PlayerTargeting>();
         startRotation = transform.localRotation;
     }
 
@@ -30,33 +31,32 @@ public class PointAt : MonoBehaviour
 
     private void TurnTowardsTarget()
     {
-        if (playerTargeting && playerTargeting.target && playerTargeting.playerWantsToAim)
-        {
+        //if (playerTargeting && playerTargeting.target && playerTargeting.playerWantsToAim) {
+        
+            if (target != null) { 
 
-            Vector3 vToTarget = playerTargeting.target.transform.position - transform.position;
+            Vector3 vToTarget = target.position - transform.position;
             vToTarget.Normalize();
 
 
             Quaternion worldRot = Quaternion.LookRotation(vToTarget, Vector3.up);
-            Quaternion prevRot = transform.rotation;
-            Vector3 eulerBefore = transform.localEulerAngles;
-            transform.rotation = worldRot;
-            Vector3 eulerAfter = transform.localEulerAngles;
-            transform.rotation = prevRot;
+            Quaternion localRot = worldRot;
 
+            if (transform.parent)
+            {
+                // convert from world to local space
+                localRot = Quaternion.Inverse(transform.parent.rotation) * worldRot;
+            }
 
+            Vector3 euler = localRot.eulerAngles;
 
-            //if (transform.parent)
-            //{
-                //localRot = Quaternion.Inverse(transform.parent.rotation) * worldRot;
-            //}
+            if (lockAxisX) euler.x = startRotation.eulerAngles.x;
+            if (lockAxisY) euler.y = startRotation.eulerAngles.y;
+            if (lockAxisZ) euler.z = startRotation.eulerAngles.z;
 
-            if (lockAxisX) eulerAfter.x = eulerBefore.x;
-            if (lockAxisY) eulerAfter.y = eulerBefore.y;
-            if (lockAxisZ) eulerAfter.z = eulerBefore.z;
+            localRot.eulerAngles = euler;
 
-            goalRotation = Quaternion.Euler(eulerAfter);
-
+            goalRotation = localRot;
         } else // Resets the arm to point at the guy's side
         {
             goalRotation = startRotation;

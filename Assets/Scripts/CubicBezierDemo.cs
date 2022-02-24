@@ -16,7 +16,7 @@ public class CubicBezierDemo : MonoBehaviour
 
     public AnimationCurve temporalEasing;
 
-    private bool reverse = false;
+    // private bool reverse = false;
     private bool IsPlaying = false;
     public float TweenTimeLength = 3;
     private float TweenTimeCurrent = 0;

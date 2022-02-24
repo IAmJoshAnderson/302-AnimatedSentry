@@ -3,13 +3,13 @@ using System.Collections.Generic;
 using UnityEngine;
 
 [RequireComponent(typeof(CharacterController))]
-public class PlayerMovement : MonoBehaviour
+public class SentryMovement : MonoBehaviour
 {
 
-    public Transform boneLegLeft;
-    public Transform boneLegRight;
+    //public Transform boneLegLeft;
+    //public Transform boneLegRight;
 
-    public float walkSpeed = 5; // How fast the guy is moving
+    public float walkSpeed = 3; // How fast the guy is moving
 
     [Range (-10, -1)]
     public float gravity = -1;
@@ -98,8 +98,8 @@ public class PlayerMovement : MonoBehaviour
         Quaternion playerRotation = Quaternion.AngleAxis(wave, axis);
         Quaternion targetRotation = Quaternion.AngleAxis(-wave, axis);
 
-        boneLegLeft.localRotation = Quaternion.Euler(wave, 0, 0);
-        boneLegRight.localRotation = Quaternion.Euler(-wave, 0, 0);
+       //boneLegLeft.localRotation = Quaternion.Euler(wave, 0, 0);
+       //boneLegRight.localRotation = Quaternion.Euler(-wave, 0, 0);
 
     }
 
