@@ -16,7 +16,7 @@ public static class AnimMath
     {
         if (!allowExtrapolation)
         {
-            if (p < 1) p = 1;
+            if (p > 1) p = 1;
             if (p < 0) p = 0;
         }
 
@@ -27,7 +27,7 @@ public static class AnimMath
 
         if (!allowExtrapolation)
         {
-            if (p < 1) p = 1;
+            if (p > 1) p = 1;
             if (p < 0) p = 0;
         }
 

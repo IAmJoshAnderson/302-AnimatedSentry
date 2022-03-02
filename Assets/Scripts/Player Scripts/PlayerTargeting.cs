@@ -6,7 +6,7 @@ public class PlayerTargeting : MonoBehaviour
 {
     public float visionDistance = 10;
 
-    [Range(1, 20)]
+    [Range(1, 10)]
     public float roundsPerSecond = 5;
 
 
@@ -27,7 +27,7 @@ public class PlayerTargeting : MonoBehaviour
     private void Start()
     {
         cam = FindObjectOfType<CameraController>();
-        Cursor.lockState = CursorLockMode.Locked;
+        //Cursor.lockState = CursorLockMode.Locked;
     }
 
     // Update is called once per frame
@@ -72,7 +72,7 @@ void DoAttack()
         if (cooldownAttack > 0) return;
         if (!playerWantsToAim) return;
         if (!playerWantsToAttack) return;
-        if (target = null) return;
+        if (target == null) return;
         if (!CanSeeThing(target)) return;
 
         cooldownAttack = 1f / roundsPerSecond;
@@ -83,8 +83,10 @@ void DoAttack()
         boneShoulderLeft.transform.localEulerAngles += new Vector3(-30, 0, 0);
         boneShoulderRight.transform.localEulerAngles += new Vector3(-30, 0, 0);
 
+    
+
         if (cam) cam.Shake(.25f);
-        
+
     }
     void scanForTargets()
     {
@@ -128,6 +130,8 @@ void DoAttack()
 
     private bool CanSeeThing(TargetableObject thing)
     {
+        if (thing == null) return false;
+
         Vector3 vToThing = thing.transform.position - transform.position; // "Thing" refers to the object that's being targeted
 
         // is too far to see?

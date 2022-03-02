@@ -6,18 +6,27 @@ using UnityEngine;
 public class SentryMovement : MonoBehaviour
 {
 
-    //public Transform boneLegLeft;
-    //public Transform boneLegRight;
+    public Transform boneTopLeft;
+    public Transform boneBottomLeft;
+    public Transform boneTopRight;
+    public Transform boneBottomRight;
+    public Transform allLegs;
+    public Transform boneTopLeftFoot;
+    public Transform boneTopRightFoot;
+    public Transform boneBottomLeftFoot;
+    public Transform boneBottomRightFoot;
 
-    public float walkSpeed = 3; // How fast the guy is moving
+    public float walkSpeed = 3;
 
-    [Range (-10, -1)]
     public float gravity = -1;
 
     public Camera cam;
 
-    CharacterController pawn;
-    private Vector3 inputDir;
+    CharacterController pawn2;
+    SentryTargeting targeting;
+
+    private Vector3 inputDir; // what makes the turret move
+
     private float velocityVertical = 0;
 
     private float cooldownJumpWindow = 0;
@@ -25,67 +34,83 @@ public class SentryMovement : MonoBehaviour
     {
         get
         {
-            return pawn.isGrounded || cooldownJumpWindow > 0;
+            return pawn2.isGrounded || cooldownJumpWindow > 0;
         }
     }
-    
 
-
-    // Start is called before the first frame update
-    void Start()
+    private void Start()
     {
-        pawn = GetComponent<CharacterController>();
+        pawn2 = GetComponent<CharacterController>();
+        targeting = GetComponent<SentryTargeting>();
+
     }
 
-    // Update is called once per frame
     void Update()
     {
 
         if (cooldownJumpWindow > 0) cooldownJumpWindow -= Time.deltaTime;
 
-        float v = Input.GetAxis("Vertical"); // using "getaxisraw" is getting exact values for smoother movement, if you so want it.
-        float h = Input.GetAxis("Horizontal");
-
-        // Turning to face the same direction as the camera, only turning the yaw value
-
-        bool playerWantsToMove = (v != 0 || h != 0);
+        float v = Input.GetAxisRaw("Vertical");
+        float h = Input.GetAxisRaw("Horizontal");
 
 
-        if (cam && playerWantsToMove)
-        
-            //turn player to match camera.
+        bool sentryWantsToMove = (v != 0 || h != 0);
 
-            inputDir = transform.forward * v + transform.right * h;
-            if (inputDir.sqrMagnitude > 1) inputDir.Normalize();
+        bool sentryIsAiming = (targeting && targeting.sentryWantsToAim && targeting.target);
 
-//vertical movement;
-        bool wantsToJump = Input.GetButtonDown("Jump"); // Boolean to be set to true if the button "Jump" is pressed in the project settings
-        if (pawn.isGrounded)
+        if (sentryIsAiming)
         {
+            Vector3 toTarget = targeting.target.transform.position - transform.position;
+
+            toTarget.Normalize();
+
+            Quaternion worldRot = Quaternion.LookRotation(toTarget);
+            Vector3 euler = worldRot.eulerAngles;
+            euler.x = 0;
+            euler.z = 0;
+            worldRot.eulerAngles = euler;
+
+            transform.rotation = AnimMath.Ease(transform.rotation, worldRot, .01f);
+        }
+        else if (cam && sentryWantsToMove)
+        {
+
+            float playerYaw = transform.eulerAngles.y;
+            float camYaw = cam.transform.eulerAngles.y;
+
+            while (camYaw > playerYaw + 180) camYaw -= 360;
+            while (camYaw < playerYaw - 180) camYaw += 360;
+
+            Quaternion playerRotation = Quaternion.Euler(0, playerYaw, 0);
+            Quaternion targetRotation = Quaternion.Euler(0, camYaw, 0);
+
+            transform.rotation = AnimMath.Ease(playerRotation, targetRotation, .01f);
+        }
+
+        inputDir = transform.forward * v + transform.right * h; // what makes the sentry move?
+        if (inputDir.sqrMagnitude > 1) inputDir.Normalize();
+
+        if (IsGrounded)
+        {
+            WalkAnimation();
             velocityVertical = 0;
-            if (wantsToJump)
-            {
-                cooldownJumpWindow = 0;
-            velocityVertical = 5;
-            }
-        } 
-            velocityVertical += gravity * Time.deltaTime;
+        }
+        else if (sentryWantsToMove == false)
+        {
+            IdleAnimation();
+            print("IdleAnimation should be playing.");
+        }
+        velocityVertical += gravity * Time.deltaTime;
 
-        // move player:
-            Vector3 moveAmount = inputDir * walkSpeed + Vector3.up * velocityVertical;
-            pawn.Move(moveAmount * Time.deltaTime);
-        if (pawn.isGrounded) cooldownJumpWindow = .5f;
-        
+        Vector3 moveAmount = inputDir * walkSpeed + Vector3.up * velocityVertical;
+        pawn2.Move(moveAmount * Time.deltaTime);
+        if (pawn2.isGrounded) cooldownJumpWindow = .5f;
 
-        WalkAnimation();
     }
-
     void WalkAnimation()
     {
-
         Vector3 inputDirLocal = transform.InverseTransformDirection(inputDir);
         Vector3 axis = Vector3.Cross(Vector3.up, inputDirLocal);
-
 
         float alignment = Vector3.Dot(inputDirLocal, Vector3.forward);
 
@@ -93,14 +118,44 @@ public class SentryMovement : MonoBehaviour
 
         float degrees = AnimMath.Lerp(10, 40, alignment);
         float speed = 10;
-        float wave = Mathf.Sin(Time.time * speed) * degrees; // Outputs a number between -30 and 30
+        float wave = Mathf.Sin(Time.time * speed) * degrees;
 
         Quaternion playerRotation = Quaternion.AngleAxis(wave, axis);
         Quaternion targetRotation = Quaternion.AngleAxis(-wave, axis);
 
-       //boneLegLeft.localRotation = Quaternion.Euler(wave, 0, 0);
-       //boneLegRight.localRotation = Quaternion.Euler(-wave, 0, 0);
+        if (allLegs)
+        {
 
+        }
+        if (boneTopLeft || boneTopRight)
+        {
+
+        }
+        if (boneBottomLeft || boneBottomRight)
+        {
+
+        }
+        if (boneTopLeftFoot || boneTopRightFoot || boneBottomLeftFoot || boneBottomRightFoot) // attempting to convert from global position to local position
+        {
+     
+
+            float walkAmount = axis.magnitude;
+            float offsetY = Mathf.Cos(Time.time * speed) * walkAmount * .99f;
+            boneTopLeftFoot.transform.localPosition = new Vector3(offsetY, offsetY, 0);
+            boneTopRightFoot.transform.localPosition = new Vector3(0, offsetY, -offsetY);
+            boneBottomLeftFoot.transform.localPosition = new Vector3(0, offsetY, offsetY);
+            boneBottomRightFoot.transform.localPosition = new Vector3(-offsetY, offsetY, 0);
+
+        }
+    }
+    void IdleAnimation()
+    {
+        // the new vectors are all 0 to reduce all the rotation of the legs when not moving
+        boneTopLeftFoot.transform.localPosition = Vector3.zero;
+        boneTopRightFoot.transform.localPosition = Vector3.zero;
+        boneBottomLeftFoot.transform.localPosition = Vector3.zero;
+        boneBottomRightFoot.transform.localPosition = Vector3.zero;
+    }
     }
 
-}
+

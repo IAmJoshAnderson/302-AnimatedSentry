@@ -14,6 +14,9 @@ public class CubicBezierDemo : MonoBehaviour
     [Range(2, 100)]
     public int CurveResolution = 10;
 
+    public int Health = 500;
+    public int currHealth;
+
     public AnimationCurve temporalEasing;
 
     // private bool reverse = false;
@@ -25,7 +28,7 @@ public class CubicBezierDemo : MonoBehaviour
     // Start is called before the first frame update
     void Start()
     {
-
+        IsPlaying = true;
     }
 
     // Update is called once per frame
@@ -52,7 +55,16 @@ public class CubicBezierDemo : MonoBehaviour
         {
             TweenTimeCurrent = 0; //isPlaying = false;
         }
+        if (Health >= 0)
+        {
+            TweenTimeCurrent = 0;
+            Health = 500;
+        }
 
+    }
+    public void ShootLaser()
+    {
+      
     }
     public void PlayTween(bool fromBeginning = true) // to play it from the beginning
     {

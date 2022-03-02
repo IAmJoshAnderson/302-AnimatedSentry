@@ -32,8 +32,9 @@ public class PointAt : MonoBehaviour
     private void TurnTowardsTarget()
     {
         //if (playerTargeting && playerTargeting.target && playerTargeting.playerWantsToAim) {
-        
-            if (target != null) { 
+
+        if (target != null)
+        {
 
             Vector3 vToTarget = target.position - transform.position;
             vToTarget.Normalize();
@@ -57,7 +58,8 @@ public class PointAt : MonoBehaviour
             localRot.eulerAngles = euler;
 
             goalRotation = localRot;
-        } else // Resets the arm to point at the guy's side
+        }
+        else // Resets the arm to point at the guy's side
         {
             goalRotation = startRotation;
         }

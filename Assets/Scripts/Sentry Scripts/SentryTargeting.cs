@@ -5,109 +5,173 @@ using UnityEngine;
 public class SentryTargeting : MonoBehaviour
 {
 
-    public TargetableObject sentryTarget { get; private set; }
+    public float sentryVision = 20;
 
-    public bool playerWantstoAim { get; private set; } // in this script it's private, but it's public to other scripts.
 
-    public bool playerWantsToAttack { get; private set; }
+    [Range(1, 50)]
+    public float roundsPerSecondSentry = 50;
 
-    private float coolDownScan = 0;
-    public float visionDistance = 20; // How far can you be away before detecting an enemy
+    public PointAt chamber;
+
+    public TargetableObject target { get; private set; }
+    public bool sentryWantsToAim { get; private set; }
+
+    public bool sentryWantsToAttack { get; private set; }
+
+    private List<TargetableObject> validTargets = new List<TargetableObject>(); // An array list of objects possible to be targeted.
+    private float cooldownScan = 0;
     private float cooldownPickTarget = 0;
+    private float cooldownAttack = 0;
 
-
-    private List<TargetableObject> validtargets = new List<TargetableObject>();
-
-
-
+    private CameraController cam;
 
     // Start is called before the first frame update
-    void Start()
+    private void Start()
     {
-        
+        cam = FindObjectOfType<CameraController>();
     }
 
     // Update is called once per frame
     void Update()
     {
-
-        coolDownScan -= Time.deltaTime;
+        sentryWantsToAttack = Input.GetButton("Fire1");
+        sentryWantsToAim = Input.GetButton("Fire2");
+        cooldownScan -= Time.deltaTime;
         cooldownPickTarget -= Time.deltaTime;
+        cooldownAttack -= Time.deltaTime;
 
-        playerWantsToAttack = Input.GetButton("Fire1");
-        playerWantstoAim = Input.GetButton("Fire2");
-
-        if (playerWantstoAim)
+        if (sentryWantsToAim) // We Will Scan the Environment, do it every half or quarter to help performance
         {
-
-            if (sentryTarget != null)
+            if (target != null)
             {
-                if (!CanSeeTarget(sentryTarget))
+                // turn towards it
+
+                Vector3 toTarget = target.transform.position - transform.position;
+                toTarget.y = 0;
+
+                if (toTarget.magnitude > 3 && !CanSeeThing(target))
                 {
-                    sentryTarget = null;
+                    target = null;
                 }
             }
-            if (coolDownScan <= 0) scanForTargets(); // Scans for targets
+            if (cooldownScan <= 0) ScanForTargets();
             if (cooldownPickTarget <= 0) PickATarget();
-
-            else
-            {
-                sentryTarget = null;
-            }
-
-
         }
-    }
-    void scanForTargets()
-    {
-        coolDownScan = .5f;
-
-        validtargets.Clear();
-
-        TargetableObject[] objects = GameObject.FindObjectsOfType<TargetableObject>(); // Find all Targetable Objects, returns an array list of each object.
-
-        foreach (TargetableObject thing in objects) // For each of these objects...
+        else
         {
-            if (CanSeeTarget(thing))
-            {
-                validtargets.Add(thing); // Add this new target to the array list
-            }
-
+            target = null;
         }
+
+        if (chamber) chamber.target = target ? target.transform : null;
+        DoAttack();
+    }
+    void DoAttack()
+    {
+        float spin = 0;
+
+        if (cooldownAttack > 0) return;
+        if (!sentryWantsToAim) return;
+        if (!sentryWantsToAttack) return;
+        if (target == null) return;
+        if (!CanSeeThing(target)) return;
+
+        cooldownAttack = 1f / roundsPerSecondSentry;
+
+        //spawn projectiles...
+        // or take health away from target...
+
+        if (spin < 0) return;
+        spin -= Time.deltaTime;
+
+        float p = spin / 1;
+        p = p * p;
+        p = AnimMath.Lerp(1, .98f, p);
+
+        chamber.transform.localEulerAngles += new Vector3(0, p, 0);
+
+        print("Hello!");
+
+    }
+    void ScanForTargets()
+    {
+        cooldownScan = .5f;
+
+        validTargets.Clear();
+
+        TargetableObject[] things = GameObject.FindObjectsOfType<TargetableObject>();
+
+        foreach (TargetableObject thing in things)
+        {
+            if (CanSeeThing(thing))
+            {
+                validTargets.Add(thing);
+            }
+        }    
     }
     void PickATarget()
-    { 
-            if (sentryTarget) return;
-
-            float closestDistanceSoFar = 0;
-
-            foreach (TargetableObject thing in validtargets)
-            {
-                Vector3 vToThing = thing.transform.position - transform.position;
-
-                float dis = vToThing.sqrMagnitude;
-
-                if (dis < closestDistanceSoFar || sentryTarget == null)
-                {
-                    closestDistanceSoFar = dis;
-                    sentryTarget = thing;
-                }
-
-            }
-
-    }
-    private bool CanSeeTarget(TargetableObject thing)
     {
-        Vector3 vToThing = thing.transform.position - transform.position; // The position of the thing, minus the position of the sentry.
+        if (target) return;
 
-        if (vToThing.sqrMagnitude > visionDistance * visionDistance) return false; // if the square root of this is greater than vision distance squared
+        float closestDistanceSoFar = 0;
 
-        float alignment = Vector3.Dot(transform.forward, vToThing.normalized); // product of two vectors
+        foreach (TargetableObject thing in validTargets)
+        {
+            Vector3 vToThing = thing.transform.position - transform.position;
 
-        if (alignment < .4f) return false; // product of two vectors less than .4?
+            float dis = vToThing.sqrMagnitude;
 
-        return true;
-
+            if (dis < closestDistanceSoFar || target == null)
+            {
+                closestDistanceSoFar = dis;
+                target = thing;
+            }
+        }
     }
+    private bool CanSeeThing(TargetableObject thing)
+    {
+        if (thing == null) return false;
 
+        Vector3 vToThing = thing.transform.position - transform.position;
+
+
+        if (vToThing.sqrMagnitude > sentryVision * sentryVision) return false;
+
+
+        float alignment = Vector3.Dot(transform.forward, vToThing.normalized);
+
+
+        if (alignment < .4f)
+        {
+            return false;
+        }
+
+
+        Ray ray = new Ray();
+
+        ray.origin = transform.position;
+        ray.direction = vToThing;
+
+        RaycastHit hit;
+
+
+        Debug.DrawRay(ray.origin, ray.direction * sentryVision, Color.red);
+
+        if (Physics.Raycast(ray, out hit, sentryVision))
+        {
+            bool canSee = false;
+            Transform xform = hit.transform;
+
+            do
+            {
+                if (xform.gameObject == thing.gameObject)
+                {
+                    canSee = true;
+                    break;
+                }
+                xform = xform.parent;
+            } while (xform != null);
+            if (!canSee) return false;
+        }
+        return true;
+    }
 }

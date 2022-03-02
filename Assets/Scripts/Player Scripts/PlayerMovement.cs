@@ -13,8 +13,11 @@ public class PlayerMovement : MonoBehaviour
 
     public float walkSpeed = 5; // How fast the guy is moving
 
-   [Range (-10, -1)]
-   public float gravity = -1;
+    public int maxHealth = 100;
+    public int currHealth;
+
+   [Range (-1, -10)]
+   public float gravity = -10;
 
     public Camera cam;
 
@@ -60,7 +63,7 @@ public class PlayerMovement : MonoBehaviour
 
         if (playerIsAiming)
         {
-            Vector3 toTarget = targeting.target.transform.position;
+            Vector3 toTarget = targeting.target.transform.position - transform.position;
 
                 toTarget.Normalize();
 
@@ -85,6 +88,7 @@ public class PlayerMovement : MonoBehaviour
             Quaternion playerRotation = Quaternion.Euler(0, playerYaw, 0);
             Quaternion targetRotation = Quaternion.Euler(0, camYaw, 0);
 
+            transform.rotation = AnimMath.Ease(playerRotation, targetRotation, .01f);
         }
 
 
@@ -93,12 +97,15 @@ public class PlayerMovement : MonoBehaviour
 
 //vertical movement;
         bool wantsToJump = Input.GetButtonDown("Jump"); // Boolean to be set to true if the button "Jump" is pressed in the project settings
-        if (pawn.isGrounded)
+        if (IsGrounded)
         {
-
-            cooldownJumpWindow = .5f;
             velocityVertical = 0;
             WalkAnimation();
+            if (wantsToJump)
+            {
+                cooldownJumpWindow = 0;
+                velocityVertical = 2;
+            }
         }
         else
         {
@@ -151,5 +158,9 @@ public class PlayerMovement : MonoBehaviour
 
 
         
+    }
+    void TakeDamage(int damage)
+    {
+        currHealth -= damage;
     }
 }

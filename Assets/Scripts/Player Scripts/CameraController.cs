@@ -55,24 +55,21 @@ public class CameraController : MonoBehaviour
 
         if (isAiming)
         {
-            Vector3 vToAimTarget = player.target.transform.position - cam.transform.position;
-            Quaternion worldRot = Quaternion.LookRotation(vToAimTarget);
-            Quaternion localRot = worldRot;
+            Quaternion tempTarget = Quaternion.Euler(0, playerYaw, 0);
 
-            if (cam.transform.parent)
-            {
-                localRot = Quaternion.Inverse(cam.transform.parent.rotation) * worldRot;
-            }
-
-            Vector3 euler = localRot.eulerAngles;
-            euler.z = 0;
-            localRot.eulerAngles = euler;
-
-            cam.transform.localRotation = AnimMath.Ease(cam.transform.localRotation, localRot, .001f);
+            transform.rotation = AnimMath.Ease(transform.rotation, tempTarget, .001f);
         }
         else
         {
-            cam.transform.localRotation = AnimMath.Ease(cam.transform.localRotation, Quaternion.identity, .001f);
+            float mx = Input.GetAxis("Mouse X");
+            float my = Input.GetAxis("Mouse Y");
+
+            yaw += mx * mouseSensitivityX;
+            pitch += my * mouseSensitivityY;
+
+
+            pitch = Mathf.Clamp(pitch, -10, 89);
+            transform.rotation = AnimMath.Ease(transform.rotation, Quaternion.Euler(pitch, yaw, 0), .001f);
         }
 
         //3. Dolly camera in/out
@@ -89,16 +86,20 @@ public class CameraController : MonoBehaviour
         if (isAiming)
         {
             Vector3 vToAimTarget = player.target.transform.position - cam.transform.position;
-            cam.transform.rotation = AnimMath.Ease(cam.transform.rotation, Quaternion.LookRotation(vToAimTarget), .001f);
+            Quaternion worldRot = Quaternion.LookRotation(vToAimTarget);
 
-            Vector3 euler = Quaternion.LookRotation(vToAimTarget).eulerAngles;
+            Quaternion localRot = worldRot;
 
-            while (playerYaw > euler.y + 180) euler.y += 360;
-            while (playerYaw < euler.y - 180) euler.y -= 360;
+            if (cam.transform.parent)
+            {
+                localRot = Quaternion.Inverse(cam.transform.parent.rotation) * worldRot;
+            }
 
-            Quaternion temp = Quaternion.Euler(euler.x, euler.y, 0);
+            Vector3 euler = localRot.eulerAngles;
+            euler.z = 0;
+            localRot.eulerAngles = euler;
 
-            cam.transform.rotation = AnimMath.Ease(cam.transform.rotation, temp, .001f);
+            cam.transform.localRotation = AnimMath.Ease(cam.transform.localRotation, localRot, .001f);
         } else
         {
             cam.transform.localRotation = AnimMath.Ease(cam.transform.localRotation, Quaternion.identity, .001f); // identity means no rotation
@@ -115,7 +116,7 @@ public class CameraController : MonoBehaviour
         p = p * p;
         p = AnimMath.Lerp(1, .98f, p);
 
-        Quaternion randomRot = AnimMath.Lerp(Random.rotation, Quaternion.identity, .99f);
+        Quaternion randomRot = AnimMath.Lerp(Random.rotation, Quaternion.identity, p);
 
         cam.transform.localRotation *= randomRot;
     }
@@ -123,6 +124,7 @@ public class CameraController : MonoBehaviour
     public void Shake(float time)
     {
         shakeTimer += time;
+        print(time);
     }
 
     private void OnDrawGizmos()
