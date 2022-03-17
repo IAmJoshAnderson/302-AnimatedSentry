@@ -146,7 +146,6 @@ void DoAttack()
             return false;
         }
         // check for occlusion...
-
         Ray ray = new Ray();
 
         ray.origin = transform.position;

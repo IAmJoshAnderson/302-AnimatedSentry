@@ -124,7 +124,6 @@ public class CameraController : MonoBehaviour
     public void Shake(float time)
     {
         shakeTimer += time;
-        print(time);
     }
 
     private void OnDrawGizmos()

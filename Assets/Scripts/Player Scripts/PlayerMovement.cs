@@ -17,7 +17,7 @@ public class PlayerMovement : MonoBehaviour
     public int currHealth;
 
    [Range (-1, -10)]
-   public float gravity = -10;
+   public float gravity = -1;
 
     public Camera cam;
 
@@ -119,8 +119,9 @@ public class PlayerMovement : MonoBehaviour
             Vector3 moveAmount = inputDir * walkSpeed + Vector3.up * velocityVertical;
             pawn.Move(moveAmount * Time.deltaTime);
         if (pawn.isGrounded) cooldownJumpWindow = .5f;
-        
-
+        if (wantsToJump == true){
+            print("Jumping!");
+        }
     }
 
     void WalkAnimation()
@@ -158,9 +159,5 @@ public class PlayerMovement : MonoBehaviour
 
 
         
-    }
-    void TakeDamage(int damage)
-    {
-        currHealth -= damage;
     }
 }

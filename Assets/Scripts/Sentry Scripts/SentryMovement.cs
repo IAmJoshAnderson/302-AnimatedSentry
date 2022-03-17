@@ -140,7 +140,7 @@ public class SentryMovement : MonoBehaviour
      
 
             float walkAmount = axis.magnitude;
-            float offsetY = Mathf.Cos(Time.time * speed) * walkAmount * .99f;
+            float offsetY = Mathf.Cos(Time.time * speed) * walkAmount * .5f;
             boneTopLeftFoot.transform.localPosition = new Vector3(offsetY, offsetY, 0);
             boneTopRightFoot.transform.localPosition = new Vector3(0, offsetY, -offsetY);
             boneBottomLeftFoot.transform.localPosition = new Vector3(0, offsetY, offsetY);

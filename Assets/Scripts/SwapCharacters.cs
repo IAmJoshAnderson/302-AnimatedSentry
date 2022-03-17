@@ -9,6 +9,8 @@ public class SwapCharacters : MonoBehaviour
     public GameObject sentry;
     public GameObject camera1;
     public GameObject camera2;
+    public static bool player1 = true;
+    public static bool player2 = false;
 
     void Start()
     {
@@ -25,14 +27,16 @@ public class SwapCharacters : MonoBehaviour
             camera1.SetActive(true);
             sentry.SetActive(false);
             camera2.SetActive(false);
-            print("R");
+            player1 = true;
+            player2 = false;
         }
         if (Input.GetKeyDown(KeyCode.T)){
             player.SetActive(false);
             camera1.SetActive(false);
             sentry.SetActive(true);
             camera2.SetActive(true);
-            print("T");
+            player2 = true;
+            player1 = false;
         }
 
     }

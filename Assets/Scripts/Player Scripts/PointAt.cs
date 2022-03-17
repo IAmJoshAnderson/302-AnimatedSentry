@@ -6,6 +6,7 @@ using UnityEngine;
 public class PointAt : MonoBehaviour
 {
     public Transform target;
+    public Transform sentryTarget;
 
     public bool lockAxisX = false;
     public bool lockAxisY = false;
@@ -14,6 +15,8 @@ public class PointAt : MonoBehaviour
 
     private Quaternion startRotation;
     private Quaternion goalRotation;
+
+    SwapCharacters swap;
 
 
     // Start is called before the first frame update
@@ -26,13 +29,14 @@ public class PointAt : MonoBehaviour
     // Update is called once per frame
     void Update()
     {
+
+        swap = GetComponent<SwapCharacters>();
         TurnTowardsTarget();
     }
-
     private void TurnTowardsTarget()
     {
         //if (playerTargeting && playerTargeting.target && playerTargeting.playerWantsToAim) {
-
+        //if ()
         if (target != null)
         {
 

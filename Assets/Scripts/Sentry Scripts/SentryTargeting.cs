@@ -89,8 +89,6 @@ public class SentryTargeting : MonoBehaviour
 
         chamber.transform.localEulerAngles += new Vector3(0, p, 0);
 
-        print("Hello!");
-
     }
     void ScanForTargets()
     {
